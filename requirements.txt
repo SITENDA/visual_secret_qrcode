@@ -1,0 +1,8 @@
+Pillow
+numpy
+qrcode[pil]==7.3
+opencv-python-headless
+pyzbar
+pyqrcode
+galois
+matplotlib

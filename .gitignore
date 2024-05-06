@@ -1,0 +1,9 @@
+# Ignore all contents of the env directory
+#env/
+
+# Ignore the Lib/site-packages directory within env
+env/Lib/site-packages/
+
+# Ignore specific files within site-packages (optional)
+# env/Lib/site-packages/some_package/
+# env/Lib/site-packages/some_file.py
