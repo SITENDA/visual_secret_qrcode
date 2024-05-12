@@ -461,108 +461,38 @@ def create_color_shares(qr_code_image_path, module_size):
     share2 = np.zeros((height, width, 3), dtype=np.uint8)
     share3 = np.zeros((height, width, 3), dtype=np.uint8)
 
-    # Define the RGB values for black and the secondary color (e.g., magenta)
-    secondary_color = (255, 0, 255)
-    black_color_choices_1 = [
-        (255, 0, 0),  # Red
-        (0, 0, 255)  # Blue
+    # Define color choices for black and white pixels
+    black_color_choices = [
+        [(255, 0, 0), (0, 0, 255)],  # Red, Blue
+        [(255, 0, 0), (0, 255, 0)],  # Red, Green
+        [(0, 255, 0), (0, 0, 255)]  # Green, Blue
     ]
-    black_color_choices_2 = [
-        (255, 0, 0),  # Red
-        (0, 255, 0)  # Green
-    ]
-    black_color_choices_3 = [
-        (0, 255, 0),  # Green
-        (0, 0, 255)  # Blue
-    ]
-    black_color_choices = [black_color_choices_1, black_color_choices_2, black_color_choices_3]
-
     white_color_choices = [
         (255, 0, 0),  # Red
         (0, 255, 0),  # Green
-        (0, 0, 255),  # Blue
+        (0, 0, 255)  # Blue
     ]
-    secondary_color_rgb = np.array(secondary_color)
 
-    # Replace black pixels with the secondary color in the color array
-    colored_arr[np.where(arr == 0)] = secondary_color_rgb
-    trial_color = (0, 255, 255)
-    colored_arr[np.where(arr != 0)] = np.array(trial_color)
+    # Iterate over the image in module-sized steps
+    for y in range(0, height, module_size):
+        for x in range(0, width, module_size):
+            # Select random color set for the current module
+            black_color_set = random.choice(black_color_choices)
+            white_color_set = random.choice(white_color_choices)
 
-    count_y = 0
-    count_x = 0
-    for y in range(height):
-        if count_y % 30 == 0:
-            choice_set = random.choice([c for c in black_color_choices])
-            share_1_color_black = random.choice([c for c in choice_set])
-            share_2_color_black = random.choice([c for c in choice_set if c != share_1_color_black])
-            share_3_color_black = random.choice([c for c in choice_set])
-            share_1_color_white = random.choice([c for c in white_color_choices])
-            share_2_color_white = random.choice([c for c in white_color_choices if c != share_1_color_white])
-            share_3_color_white = random.choice(
-                [c for c in white_color_choices if c != share_1_color_white and c != share_2_color_white])
-        for x in range(width):
-            if arr[y, x] == 0:  # Black pixel
-                # Choose a random color from the color_choices list (excluding secondary_color)
-                share1[y, x] = share_1_color_black
-                share2[y, x] = share_2_color_black
-                share3[y, x] = share_3_color_black
-            else:  # White pixel
-                # if count_y == 1:
-                #     color = random.choice([c for c in color_choices if c != secondary_color])
-                # Assign the secondary color (e.g., magenta)
-                share1[y, x] = share_1_color_white
-                share2[y, x] = share_2_color_white
-                share3[y, x] = share_3_color_white
-            count_x = count_x + 1
-        count_y = count_y + 1
-    # share1[np.where(arr != 0)] = [255, 0, 0]
-    # share2[np.where(arr != 0)] = [255, 0, 0]
-    # share3[np.where(arr != 0)] = [255, 0, 0]
-    #
-    # share1[np.where(arr == 0)] = [255, 0, 255]
-    # share2[np.where(arr == 0)] = [255, 0, 255]
-    # share3[np.where(arr == 0)] = [255, 0, 255]
-
-    # Iterate through each pixel/module in the grayscale image
-    # for i in range(height):
-    #     for j in range(width):
-    #         grayscale_value = arr[i, j]
-    #
-    #         # Check if the pixel color in the original image is magenta
-    #         original_pixel_color = qr_code_image.getpixel((j, i))
-    #         is_magenta = (original_pixel_color == (255, 0, 255))
-    #         random_number = random.randint(0, 2)
-    #         # Determine unique colors for each share based on grayscale value
-    #         if grayscale_value == 255:
-    #             # White pixel (full brightness)
-    #             if random_number == 0:
-    #                 share1[i, j] = [255, 0, 0]  # Red in share1
-    #                 share2[i, j] = [0, 255, 0]  # Green in share2
-    #                 share3[i, j] = [0, 0, 255]  # Blue in share3
-    #             if random_number == 1:
-    #                 share1[i, j] = [0, 255, 0]  # Red in share1
-    #                 share2[i, j] = [0, 0, 255]  # Green in share2
-    #                 share3[i, j] = [255, 0, 0]  # Blue in share3
-    #             if random_number == 2:
-    #                 share1[i, j] = [0, 0, 255]  # Red in share1
-    #                 share2[i, j] = [255, 0, 0]  # Green in share2
-    #                 share3[i, j] = [0, 255, 0]  # Blue in share3
-    #         elif is_magenta:
-    #             # Magenta pixel (secondary color)
-    #             if random_number == 0:
-    #                 share1[i, j] = [255, 0, 0]  # Red in share1
-    #                 share2[i, j] = [255, 0, 0]  # Red (same as share1) in share2
-    #                 share3[i, j] = [0, 255, 0]  # Green in share3
-    #             if random_number == 1:
-    #                 share1[i, j] = [0, 0, 255]  # Red in share1
-    #                 share2[i, j] = [0, 0, 255]  # Red (same as share1) in share2
-    #                 share3[i, j] = [255, 0, 0]  # Green in share3
-    #             if random_number == 2:
-    #                 share1[i, j] = [0, 255, 0]  # Red in share1
-    #                 share2[i, j] = [0, 255, 0]  # Red (same ased
-    #                 # share1) in share2
-    #                 share3[i, j] = [0, 0, 255]  # Green in share3
+            # Assign colors to the pixels within the current module
+            for dy in range(module_size):
+                for dx in range(module_size):
+                    ny, nx = y + dy, x + dx
+                    if ny < height and nx < width:  # Check bounds to avoid out-of-bound access
+                        if arr[ny, nx] == 0:  # Black pixel
+                            share1[ny, nx] = black_color_set[0]
+                            share2[ny, nx] = black_color_set[1]
+                            share3[ny, nx] = black_color_set[0]  # Use the same as share1 for simplicity
+                        else:  # White pixel
+                            share1[ny, nx] = white_color_set[0]
+                            share2[ny, nx] = white_color_set[1]
+                            share3[ny, nx] = white_color_set[2]
 
     # Create PIL images from the color shares
     share1_img = Image.fromarray(share1, 'RGB')
