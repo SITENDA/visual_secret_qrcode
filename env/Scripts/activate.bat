@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=F:\development\PythonProjects\nasser\final-project\env
+set VIRTUAL_ENV=F:\development\PythonProjects\nasser\visual_secret_qrcode\env
 
 if not defined PROMPT set PROMPT=$P$G
 
