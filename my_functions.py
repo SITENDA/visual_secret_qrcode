@@ -529,7 +529,7 @@ def create_color_shares(qr_code_image_path, module_size):
                         if arr[ny, nx] == 0:
                             share1[ny, nx] = color_set[0]
                             share2[ny, nx] = color_set[1]
-                            share3[ny, nx] = color_set[0]  # Use the same as share1 for simplicity
+                            share3[ny, nx] = color_set[2]  # Use the same as share1 for simplicity
                         else:   # arr[ny, nx] == 1:
                             share1[ny, nx] = white_color_set[0]
                             share2[ny, nx] = white_color_set[1]
