@@ -1,3 +1,5 @@
+import itertools
+
 from PIL import Image
 import numpy as np
 import qrcode
@@ -462,42 +464,84 @@ def create_color_shares(qr_code_image_path, module_size):
     share3 = np.zeros((height, width, 3), dtype=np.uint8)
 
     # Define color choices for black and white pixels
-    black_color_choices = [
-        [(255, 0, 0), (0, 0, 255)],  # Red, Blue
+    color_choices = [
         [(255, 0, 0), (0, 255, 0)],  # Red, Green
+        [(255, 0, 0), (0, 0, 255)],  # Red, Blue
         [(0, 255, 0), (0, 0, 255)]  # Green, Blue
     ]
     white_color_choices = [
-        (255, 0, 0),  # Red
-        (0, 255, 0),  # Green
-        (0, 0, 255)  # Blue
+        [(255, 0, 0), (0, 255, 0), (0, 0, 255)],  # RGB
+        [(255, 0, 0), (0, 0, 255), (0, 255, 0)],  # RBG
+        [(0, 255, 0), (255, 0, 0), (0, 0, 255)],  # GRB
+        [(0, 255, 0), (0, 0, 255), (255, 0, 0)],  # GBR
+        [(0, 0, 255), (255, 0, 0), (0, 255, 0)],  # BRG
+        [(0, 0, 255), (0, 255, 0), (255, 0, 0)]  # BGR
     ]
+
+    # Generate all possible combinations of 2 greens and one primary color
+    green_combinations = [
+        [(0, 255, 0), (0, 255, 0), (255, 0, 0)],  # Green first two positions, red comes last
+        [(255, 0, 0), (0, 255, 0), (0, 255, 0)],  # Green last two positions, red comes first
+        [(0, 255, 0), (255, 0, 0), (0, 255, 0)],  # Green takes first and last, red in the middle
+        [(0, 255, 0), (0, 255, 0), (0, 0, 255)],  # Green first two positions, blue comes last
+        [(0, 0, 255), (0, 255, 0), (0, 255, 0)],  # Green last two positions, blue comes first
+        [(0, 255, 0), (0, 0, 255), (0, 255, 0)]  # Green takes first and last, blue in the middle
+    ]
+
+    # Generate all possible combinations of 2 reds and one primary color
+    red_combinations = [
+        [(255, 0, 0), (255, 0, 0), (0, 255, 0)],  # Red first two positions, green comes last
+        [(0, 255, 0), (255, 0, 0), (255, 0, 0)],  # Red last two positions, green comes first
+        [(255, 0, 0), (0, 255, 0), (255, 0, 0)],  # Red takes first and last, green in the middle
+        [(255, 0, 0), (255, 0, 0), (0, 0, 255)],  # Red first two positions, blue comes last
+        [(0, 0, 255), (255, 0, 0), (255, 0, 0)],  # Red last two positions, blue comes first
+        [(255, 0, 0), (0, 0, 255), (255, 0, 0)]  # Red takes first and last, blue in the middle
+    ]
+
+    # Generate all possible combinations of 2 blues and one primary color
+    blue_combinations = [
+        [(0, 0, 255), (0, 0, 255), (0, 255, 0)],  # Blue first two positions, green comes last
+        [(0, 255, 0), (0, 0, 255), (0, 0, 255)],  # Blue last two positions, green comes first
+        [(0, 0, 255), (0, 255, 0), (0, 0, 255)],  # Blue takes first and last, green in the middle
+        [(0, 0, 255), (0, 0, 255), (255, 0, 0)],  # Blue first two positions, red comes last
+        [(255, 0, 0), (0, 0, 255), (0, 0, 255)],  # Blue last two positions, red comes first
+        [(0, 0, 255), (255, 0, 0), (0, 0, 255)]  # Blue takes first and last, red in the middle
+    ]
+
+    # Combine all combinations into the complete set of primary color choices
+    primary_color_choices = (
+            green_combinations +
+            red_combinations +
+            blue_combinations
+    )
 
     # Iterate over the image in module-sized steps
     for y in range(0, height, module_size):
         for x in range(0, width, module_size):
             # Select random color set for the current module
-            black_color_set = random.choice(black_color_choices)
+            color_set = random.choice(primary_color_choices)
             white_color_set = random.choice(white_color_choices)
-
             # Assign colors to the pixels within the current module
             for dy in range(module_size):
                 for dx in range(module_size):
                     ny, nx = y + dy, x + dx
                     if ny < height and nx < width:  # Check bounds to avoid out-of-bound access
-                        if arr[ny, nx] == 0:  # Black pixel
-                            share1[ny, nx] = black_color_set[0]
-                            share2[ny, nx] = black_color_set[1]
-                            share3[ny, nx] = black_color_set[0]  # Use the same as share1 for simplicity
-                        else:  # White pixel
+                        if arr[ny, nx] == 0:
+                            share1[ny, nx] = color_set[0]
+                            share2[ny, nx] = color_set[1]
+                            share3[ny, nx] = color_set[0]  # Use the same as share1 for simplicity
+                        else:   # arr[ny, nx] == 1:
                             share1[ny, nx] = white_color_set[0]
                             share2[ny, nx] = white_color_set[1]
-                            share3[ny, nx] = white_color_set[2]
+                            share3[ny, nx] = white_color_set[2]  # Use the same as share1 for simplicity
+
 
     # Create PIL images from the color shares
     share1_img = Image.fromarray(share1, 'RGB')
     share2_img = Image.fromarray(share2, 'RGB')
     share3_img = Image.fromarray(share3, 'RGB')
+
+    return share1_img, share2_img, share3_img
 
     return share1_img, share2_img, share3_img
 
